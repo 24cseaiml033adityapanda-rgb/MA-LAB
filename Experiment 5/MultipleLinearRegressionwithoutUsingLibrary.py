@@ -7,7 +7,7 @@ def multiply(A,B):
     # Check if B is a 1D vector
     is_b_1d = isinstance(B[0],(int,float))
     if is_b_1d:
-        return [sum(A[i][k]*B[k] for k in range(len(B))) for i in range](len(A))
+        return [sum(A[i][k] * B[k] for k in range(len(B))) for i in range(len(A))]
     else:
         #Standrad matrix multiplication
         result=[[0 for _ in range(len(B[0]))] for _ in range(len(A))]
@@ -69,4 +69,74 @@ try:
     X = []
     for i in range(n):
         while True:
-            
+            try:
+                row_input = input(f"Row {i+1} features : ").split()
+                row = [float(val) for val in row_input]
+                if len(row) != k:
+                    print(f"Error: Expected {k} values. Please try again")
+                    continue
+                #Add 1.0 at index 0 for the Intercept(B0)
+                X.append([1.0]+row)
+                break
+            except ValueError:
+                print("Error: Invalid input. Enter numbers only")
+    
+    #3. GET Y DATA (TARGET)
+    print(f"\nEnter the {n} target values (Y) separated by spaces: ")
+    while True:
+        try:
+            y_input=input("Y values: ").split()
+            if len(y_input) != n:
+                print(f"Error: Expected {n} values. Please try again.")
+                continue
+            Y = [float(val) for val in y_input]
+            break
+        except ValueError:
+            print("Error: Invalid input. Enter numbers only.")
+
+    #4. Math: Normal Equationn(Beta = (X'X)^-1 X'Y)
+    XT = transpose(X)
+    XTX = multiply(XT,X)
+    XTX_inv = invert_matrix(XTX)
+    
+    if XTX_inv is None:
+        print("\n[!] Error: The matrix is singular (non-invertible). Check for reductunt data")
+    else:
+        XTY = multiply(XT,Y)
+        beta = multiply(XTX_inv,XTY)
+
+        #5.OUTPUT RESULTS
+        print("\n"+"="*45)
+        print(f"{'variable':<20} | {'Coefficient':<15}")
+        print("-"*45)
+        print(f"{'Intercept (B0)':<20} | {beta[0]:.4f}")
+        for i in range(1,len(beta)):
+            print(f"{f'Feature X{i} (B{i})':<20} | {beta[i]:.4f}")
+        print("="*45)
+except Exception as e:
+    print(f"\nAn error occoured: {e}")
+
+    """
+    Output:
+    ---Multiple Linear Regression---
+Enter number of data points (rows): 5
+Enter number of features (independent variables) : 2
+
+Enter the 2 features for each row :
+Row 1 features : 12 2
+Row 2 features : 13 4
+Row 3 features : 14 5
+Row 4 features : 15 7
+Row 5 features : 16 8
+
+Enter the 5 target values (Y) separated by spaces:
+Y values: 134 156 234 234 123
+
+=============================================
+variable             | Coefficient
+---------------------------------------------
+Intercept (B0)       | 1087.9333
+Feature X1 (B1)      | -88.4000
+Feature X2 (B2)      | 62.6667
+=============================================
+    """
